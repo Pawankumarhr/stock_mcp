@@ -1,6 +1,7 @@
 import yfinance as yf
 import numpy as np
 from datetime import datetime
+from tools._cache import ttl_cache, retry_on_rate_limit
 
 
 def _compute_rsi(prices, period=14):
@@ -56,6 +57,8 @@ def _compute_bollinger(prices, period=20):
     return round(sma + 2 * std, 2), round(sma, 2), round(sma - 2 * std, 2)
 
 
+@ttl_cache(ttl_seconds=600)
+@retry_on_rate_limit(max_retries=3)
 def generate_signal(symbol: str, timeframe: str = "1mo") -> dict:
     """
     Generate a BUY / SELL / HOLD signal with confidence %.

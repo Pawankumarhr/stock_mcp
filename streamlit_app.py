@@ -115,8 +115,12 @@ elif page == "📊 Live Stock Data":
     cur = _currency(symbol)
 
     if st.button("Fetch Live Data", type="primary"):
-        with st.spinner(f"Fetching {symbol}..."):
-            data = fetch_stock_data(symbol)
+        try:
+            with st.spinner(f"Fetching {symbol}..."):
+                data = fetch_stock_data(symbol)
+        except Exception as e:
+            st.error(f"⚠️ Could not fetch data for {symbol}. Yahoo Finance may be rate-limiting. Try again in a minute.\n\nDetails: {e}")
+            st.stop()
 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Price", f"{cur}{data['price']}")
@@ -168,8 +172,12 @@ elif page == "📅 Historical Data":
     )
 
     if st.button("Fetch Historical Data", type="primary"):
-        with st.spinner(f"Fetching {symbol} history ({period})..."):
-            records = fetch_historical_data(symbol, period)
+        try:
+            with st.spinner(f"Fetching {symbol} history ({period})..."):
+                records = fetch_historical_data(symbol, period)
+        except Exception as e:
+            st.error(f"⚠️ Could not fetch historical data. Yahoo Finance may be rate-limiting. Try again in a minute.\n\nDetails: {e}")
+            st.stop()
 
         if records:
             df = pd.DataFrame(records)
@@ -223,8 +231,12 @@ elif page == "🎯 Trading Signal":
     name, symbol = _parse_company(selected)
 
     if st.button("Generate Signal", type="primary"):
-        with st.spinner(f"Analyzing {symbol}..."):
-            sig = generate_signal(symbol, timeframe="3mo")
+        try:
+            with st.spinner(f"Analyzing {symbol}..."):
+                sig = generate_signal(symbol, timeframe="3mo")
+        except Exception as e:
+            st.error(f"⚠️ Could not generate signal. Yahoo Finance may be rate-limiting. Try again in a minute.\n\nDetails: {e}")
+            st.stop()
 
         signal = sig.get("signal", "N/A")
         confidence = sig.get("confidence", 0)
@@ -260,9 +272,13 @@ elif page == "🔗 Options & Greeks":
     name, symbol = _parse_company(selected)
 
     if st.button("Fetch Options + Greeks", type="primary"):
-        with st.spinner(f"Fetching options for {symbol}..."):
-            stock = fetch_stock_data(symbol)
-            opts = fetch_options_data(symbol)
+        try:
+            with st.spinner(f"Fetching options for {symbol}..."):
+                stock = fetch_stock_data(symbol)
+                opts = fetch_options_data(symbol)
+        except Exception as e:
+            st.error(f"⚠️ Could not fetch options data. Yahoo Finance may be rate-limiting. Try again in a minute.\n\nDetails: {e}")
+            st.stop()
 
         if not opts.get("available"):
             st.warning(opts.get("message", "Options data not available."))
@@ -299,8 +315,12 @@ elif page == "⚡ Unusual Activity":
     name, symbol = _parse_company(selected)
 
     if st.button("Detect", type="primary"):
-        with st.spinner(f"Scanning {symbol}..."):
-            result = detect_unusual_activity(symbol)
+        try:
+            with st.spinner(f"Scanning {symbol}..."):
+                result = detect_unusual_activity(symbol)
+        except Exception as e:
+            st.error(f"⚠️ Could not detect activity. Yahoo Finance may be rate-limiting. Try again in a minute.\n\nDetails: {e}")
+            st.stop()
 
         alerts = result.get("alerts", [])
         if alerts:
@@ -334,8 +354,12 @@ elif page == "🔍 Market Scanner":
     criteria = st.selectbox("Filter", options=list(filter_labels.keys()), format_func=lambda x: filter_labels[x])
 
     if st.button("Scan Market", type="primary"):
-        with st.spinner("Scanning all companies..."):
-            scan = scan_market(criteria)
+        try:
+            with st.spinner("Scanning all companies..."):
+                scan = scan_market(criteria)
+        except Exception as e:
+            st.error(f"⚠️ Market scan failed. Yahoo Finance may be rate-limiting. Try again in a minute.\n\nDetails: {e}")
+            st.stop()
 
         matches = scan.get("matches", [])
         st.subheader(f"Results: {len(matches)} match(es) — Filter: {criteria}")
@@ -355,8 +379,12 @@ elif page == "🌡️ Sector Heatmap":
     st.title("🌡️ Sector Performance Heatmap")
 
     if st.button("Load Heatmap", type="primary"):
-        with st.spinner("Fetching sector data..."):
-            heatmap = get_sector_heatmap()
+        try:
+            with st.spinner("Fetching sector data..."):
+                heatmap = get_sector_heatmap()
+        except Exception as e:
+            st.error(f"⚠️ Sector heatmap failed. Yahoo Finance may be rate-limiting. Try again in a minute.\n\nDetails: {e}")
+            st.stop()
 
         sectors = heatmap.get("sectors", [])
         if sectors:

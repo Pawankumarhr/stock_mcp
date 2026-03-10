@@ -8,6 +8,7 @@ import yfinance as yf
 import numpy as np
 from datetime import datetime
 from tools.live_stock import COMPANIES
+from tools._cache import ttl_cache, retry_on_rate_limit
 
 
 FILTER_OPTIONS = {
@@ -34,6 +35,7 @@ def _calc_rsi(prices, period=14):
     return round(100 - (100 / (1 + rs)), 2)
 
 
+@retry_on_rate_limit(max_retries=2)
 def _scan_single(symbol: str, name: str) -> dict:
     """Gather scan metrics for one stock."""
     try:
@@ -90,6 +92,7 @@ def _scan_single(symbol: str, name: str) -> dict:
         return None
 
 
+@ttl_cache(ttl_seconds=600)
 def scan_market(filter_criteria: str = "all") -> dict:
     """
     Scan all tracked companies and filter by criteria.

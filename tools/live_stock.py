@@ -1,5 +1,6 @@
 import yfinance as yf
 from datetime import datetime
+from tools._cache import ttl_cache, retry_on_rate_limit
 
 
 COMPANIES = {
@@ -41,8 +42,10 @@ def display_menu():
     print("=" * 55)
 
 
+@ttl_cache(ttl_seconds=300)
+@retry_on_rate_limit(max_retries=3)
 def fetch_stock_data(symbol: str) -> dict:
-    """Fetch live NSE/BSE/US stock data using yfinance."""
+    """Fetch live NSE/BSE/US stock data using yfinance (cached 5 min)."""
     ticker = yf.Ticker(symbol)
     info = ticker.info
 
@@ -69,8 +72,10 @@ def fetch_stock_data(symbol: str) -> dict:
     }
 
 
+@ttl_cache(ttl_seconds=600)
+@retry_on_rate_limit(max_retries=3)
 def fetch_historical_data(symbol: str, period: str = "1mo") -> list:
-    """Fetch historical OHLC data using yfinance."""
+    """Fetch historical OHLC data using yfinance (cached 10 min)."""
     ticker = yf.Ticker(symbol)
     hist = ticker.history(period=period)
     records = []
@@ -86,8 +91,10 @@ def fetch_historical_data(symbol: str, period: str = "1mo") -> list:
     return records
 
 
+@ttl_cache(ttl_seconds=900)
+@retry_on_rate_limit(max_retries=3)
 def fetch_options_data(symbol: str) -> dict:
-    """Fetch options chain data. Uses US ADR for Indian .NS stocks (Yahoo has no NSE options)."""
+    """Fetch options chain data (cached 15 min). Uses US ADR for Indian .NS stocks."""
     ADR_MAP = {
         "RELIANCE.NS": None,
         "TCS.NS": None,

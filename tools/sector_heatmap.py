@@ -7,6 +7,7 @@ Uses representative ETFs/stocks per sector for real data.
 import yfinance as yf
 import numpy as np
 from datetime import datetime
+from tools._cache import ttl_cache, retry_on_rate_limit
 
 
 # Sector → representative tickers (mix of US ETFs + Indian sector leaders)
@@ -61,6 +62,7 @@ def _get_sector_change(tickers: list) -> dict:
     }
 
 
+@ttl_cache(ttl_seconds=900)
 def get_sector_heatmap() -> dict:
     """
     Build a sector heatmap with 1-day, 5-day, and 1-month % changes.

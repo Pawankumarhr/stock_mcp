@@ -6,8 +6,11 @@ Analyzes a stock for volume spikes, price anomalies, and volatility bursts.
 import yfinance as yf
 import numpy as np
 from datetime import datetime
+from tools._cache import ttl_cache, retry_on_rate_limit
 
 
+@ttl_cache(ttl_seconds=600)
+@retry_on_rate_limit(max_retries=3)
 def detect_unusual_activity(symbol: str) -> dict:
     """
     Detect unusual trading activity for a given symbol.
