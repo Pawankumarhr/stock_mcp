@@ -19,7 +19,7 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 # ── configuration ────────────────────────────────────────────────────────
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = "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"
 OPENROUTER_URL     = "https://openrouter.ai/api/v1/chat/completions"
 MODEL              = "openai/gpt-4.1-mini"
 MAX_RETRIES        = 2
