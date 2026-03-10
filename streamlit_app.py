@@ -553,13 +553,14 @@ elif page == "💰 Portfolio":
 # ════════════════════════════════════════════════════════════════════════
 elif page == "🤖 AI Chatbot":
     st.title("🤖 AI Stock Chatbot")
-    st.caption("Ask natural-language questions about stocks, portfolio, P&L — powered by RapidAPI Claude + live tools")
+    st.caption("Ask natural-language questions about stocks, portfolio, P&L — powered by GPT-5.2 + live tools")
 
-    import http.client
     import re
+    import requests as _requests
 
-    RAPIDAPI_KEY  = "6b83508bd3msh714829b57afdbe3p1a7b49jsn7f6ddf4fc276"
-    RAPIDAPI_HOST = "open-ai21.p.rapidapi.com"
+    OPENROUTER_API_KEY = "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"
+    OPENROUTER_URL     = "https://openrouter.ai/api/v1/chat/completions"
+    MODEL              = "openai/gpt-4.1-mini"
 
     # ── Direct tool mapping ──────────────────────────────────────────
     TOOL_MAP = {
@@ -601,29 +602,25 @@ elif page == "🤖 AI Chatbot":
                        "net_profit_loss": pnl, "profit_loss_pct": pct},
         }, default=str)
 
-    # ── RapidAPI call ────────────────────────────────────────────────
-    def _call_rapidapi_st(messages):
-        conn = http.client.HTTPSConnection(RAPIDAPI_HOST, timeout=45)
-        payload = json.dumps({"messages": messages, "web_access": False})
-        headers = {
-            "x-rapidapi-key": RAPIDAPI_KEY,
-            "x-rapidapi-host": RAPIDAPI_HOST,
-            "Content-Type": "application/json",
-        }
-        conn.request("POST", "/claude3", payload, headers)
-        res = conn.getresponse()
-        data = res.read().decode("utf-8")
-        conn.close()
-        try:
-            parsed = json.loads(data)
-            if isinstance(parsed, dict):
-                return (parsed.get("result") or parsed.get("response")
-                        or parsed.get("content") or parsed.get("message")
-                        or parsed.get("text") or parsed.get("answer")
-                        or json.dumps(parsed))
-            return str(parsed)
-        except json.JSONDecodeError:
-            return data
+    # ── OpenRouter API call ──────────────────────────────────────────
+    def _call_llm_st(messages):
+        resp = _requests.post(
+            OPENROUTER_URL,
+            headers={
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": MODEL,
+                "messages": messages,
+                "temperature": 0.4,
+                "max_tokens": 2048,
+            },
+            timeout=60,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return data["choices"][0]["message"]["content"]
 
     def _parse_tool_call_st(text):
         """Handle nested braces like {"args": {"symbol": "TCS.NS"}}."""
@@ -647,8 +644,12 @@ elif page == "🤖 AI Chatbot":
                         break
         return None, text
 
-    TOOL_PROMPT = """\
-To call a tool reply ONLY:  TOOL_CALL: {"name": "<tool>", "args": {<args>}}
+    SYS_MSG = """\
+You are an expert stock analyst assistant with live market tools.
+Companies: AAPL, GOOGL, MSFT, AMZN, TSLA (US); RELIANCE.NS, TCS.NS, INFY.NS, HDFCBANK.NS, WIPRO.NS (India).
+
+To fetch data, reply with EXACTLY:
+TOOL_CALL: {"name": "<tool>", "args": {<arguments>}}
 
 Tools:
 1. list_companies()  2. get_stock_data(symbol) — .NS for India
@@ -659,18 +660,14 @@ Tools:
 11. list_portfolio_users()  12. get_portfolio_summary(user_id)
 13. get_transaction_history(user_id, symbol="")
 
-Rules: ONE TOOL_CALL per reply. Use indian rupee for .NS, $ for US. Never guess."""
-
-    SYS_MSG = f"You are an expert stock analyst. Companies: AAPL,GOOGL,MSFT,AMZN,TSLA(US); RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS,WIPRO.NS(India).\n{TOOL_PROMPT}"
+Rules: ONE TOOL_CALL per reply. ₹ for .NS, $ for US. Never guess data. Give specific numbers."""
 
     # ── Session state ────────────────────────────────────────────────
     if "chat_messages" not in st.session_state:
         st.session_state.chat_messages = []
     if "api_messages" not in st.session_state:
-        # Prime with system context
         st.session_state.api_messages = [
-            {"role": "user", "content": SYS_MSG + "\nAcknowledge briefly."},
-            {"role": "assistant", "content": "I'm ready to help with stock analysis. I have access to 13 tools for live data, signals, options, portfolio tracking and more. What would you like to know?"},
+            {"role": "system", "content": SYS_MSG},
         ]
 
     # Display chat history
@@ -692,7 +689,7 @@ Rules: ONE TOOL_CALL per reply. Use indian rupee for .NS, $ for US. Never guess.
                 max_rounds = 8
                 for round_num in range(max_rounds):
                     with st.spinner("Thinking..." if round_num == 0 else "Analyzing data..."):
-                        reply = _call_rapidapi_st(st.session_state.api_messages)
+                        reply = _call_llm_st(st.session_state.api_messages)
 
                     tool_call, remaining = _parse_tool_call_st(reply)
 
@@ -720,13 +717,13 @@ Rules: ONE TOOL_CALL per reply. Use indian rupee for .NS, $ for US. Never guess.
                     else:
                         result_text = json.dumps({"error": f"Unknown tool: {tool_name}"})
 
-                    if len(result_text) > 8000:
-                        result_text = result_text[:8000] + "\n...(truncated)"
+                    if len(result_text) > 12000:
+                        result_text = result_text[:12000] + "\n...(truncated)"
 
                     st.session_state.api_messages.append({"role": "assistant", "content": reply})
                     st.session_state.api_messages.append({
                         "role": "user",
-                        "content": f"TOOL_RESULT for {tool_name}:\n{result_text}\n\nAnalyze this data. Give a clear answer with specific numbers. Do NOT call another tool unless absolutely necessary."
+                        "content": f"TOOL_RESULT for {tool_name}:\n{result_text}\n\nAnalyze this data thoroughly. Provide specific numbers, comparisons, and a clear recommendation."
                     })
                 else:
                     answer = "Max tool rounds reached."
@@ -739,14 +736,13 @@ Rules: ONE TOOL_CALL per reply. Use indian rupee for .NS, $ for US. Never guess.
                 st.error(err_msg)
                 st.session_state.chat_messages.append({"role": "assistant", "content": err_msg})
 
-            # Trim conversation
-            if len(st.session_state.api_messages) > 30:
-                st.session_state.api_messages = st.session_state.api_messages[:2] + st.session_state.api_messages[-24:]
+            # Trim conversation — keep system msg + last 28
+            if len(st.session_state.api_messages) > 32:
+                st.session_state.api_messages = st.session_state.api_messages[:1] + st.session_state.api_messages[-28:]
 
     if st.sidebar.button("🗑️ Clear Chat"):
         st.session_state.chat_messages = []
         st.session_state.api_messages = [
-            {"role": "user", "content": SYS_MSG + "\nAcknowledge briefly."},
-            {"role": "assistant", "content": "I'm ready to help with stock analysis. What would you like to know?"},
+            {"role": "system", "content": SYS_MSG},
         ]
         st.rerun()

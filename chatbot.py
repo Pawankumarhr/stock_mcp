@@ -1,5 +1,5 @@
 """
-Stock Analysis Chatbot  —  RapidAPI Claude LLM  +  MCP Tool Server
+Stock Analysis Chatbot  —  OpenRouter GPT-5.2  +  MCP Tool Server
 Ask natural-language questions; the LLM automatically calls the right
 stock-market tools via the MCP server running as a subprocess.
 
@@ -12,99 +12,92 @@ import json
 import sys
 import os
 import time
-import http.client
 import re
+import requests
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
 # ── configuration ────────────────────────────────────────────────────────
-RAPIDAPI_KEY  = "6b83508bd3msh714829b57afdbe3p1a7b49jsn7f6ddf4fc276"
-RAPIDAPI_HOST = "open-ai21.p.rapidapi.com"
-MAX_RETRIES   = 3
-MCP_SERVER    = "mcp_server.py"
+OPENROUTER_API_KEY = "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"
+OPENROUTER_URL     = "https://openrouter.ai/api/v1/chat/completions"
+MODEL              = "openai/gpt-4.1-mini"
+MAX_RETRIES        = 2
+MCP_SERVER         = "mcp_server.py"
 
-TOOL_DESCRIPTIONS = """\
-To call a tool, reply ONLY with:  TOOL_CALL: {"name": "<tool>", "args": {<args>}}
+SYSTEM_PROMPT = """\
+You are an expert stock analyst assistant with live market tools.
+
+Companies: AAPL, GOOGL, MSFT, AMZN, TSLA (US); RELIANCE.NS, TCS.NS, INFY.NS, HDFCBANK.NS, WIPRO.NS (India).
+
+To fetch data, reply with EXACTLY (one per message):
+TOOL_CALL: {"name": "<tool>", "args": {<arguments>}}
 
 Tools:
 1. list_companies()
-2. get_stock_data(symbol) — live price/volume/PE/52w. Use .NS for India.
-3. get_historical_data(symbol, period="1mo") — OHLCV.
-4. get_options_chain(symbol)
+2. get_stock_data(symbol) — live price, volume, PE, 52w range. Use .NS for Indian stocks.
+3. get_historical_data(symbol, period="1mo") — OHLCV history.
+4. get_options_chain(symbol) — calls & puts.
 5. calculate_greeks(symbol) — Black-Scholes Greeks.
-6. get_news(company_name, symbol)
-7. generate_trading_signal(symbol) — BUY/SELL/HOLD + confidence.
-8. detect_unusual_activity(symbol)
-9. scan_market(filter_criteria="all") — oversold/overbought/high_volume/bullish/bearish/near_52w_low/near_52w_high/all.
-10. get_sector_heatmap()
-11. list_portfolio_users()
-12. get_portfolio_summary(user_id)
-13. get_transaction_history(user_id, symbol="")
+6. get_news(company_name, symbol) — latest headlines.
+7. generate_trading_signal(symbol) — BUY/SELL/HOLD with confidence %.
+8. detect_unusual_activity(symbol) — volume spikes, price gaps.
+9. scan_market(filter_criteria="all") — filters: oversold,overbought,high_volume,bullish,bearish,near_52w_low,near_52w_high,all.
+10. get_sector_heatmap() — sector performance.
+11. list_portfolio_users() — registered users.
+12. get_portfolio_summary(user_id) — holdings with live P&L.
+13. get_transaction_history(user_id, symbol="") — buy/sell history.
 
-Rules: ONE TOOL_CALL per reply. Use ₹ for .NS, $ for US. Never guess data.
+Rules:
+- ONE TOOL_CALL per reply. After receiving TOOL_RESULT, analyze it thoroughly.
+- Use ₹ for .NS stocks, $ for US stocks.
+- Never fabricate data — always use a tool.
+- For portfolio: first list_portfolio_users, then get_portfolio_summary.
+- Give confident, specific answers with numbers, comparison and actionable insights.
 """
 
-SYSTEM_PROMPT = f"""You are an expert stock analyst. Companies: AAPL,GOOGL,MSFT,AMZN,TSLA (US); RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS,WIPRO.NS (India).
-{TOOL_DESCRIPTIONS}"""
 
+# ── OpenRouter API call ──────────────────────────────────────────────────
 
-# ── RapidAPI Claude call ─────────────────────────────────────────────────
-
-def _call_rapidapi(messages: list[dict]) -> str:
-    """Send messages to RapidAPI Claude3 endpoint and return the response text."""
+def _call_llm(messages: list[dict]) -> str:
+    """Call OpenRouter chat completions and return assistant text."""
     for attempt in range(MAX_RETRIES):
         try:
-            conn = http.client.HTTPSConnection(RAPIDAPI_HOST, timeout=45)
-            payload = json.dumps({
-                "messages": messages,
-                "web_access": False,
-            })
-            headers = {
-                "x-rapidapi-key": RAPIDAPI_KEY,
-                "x-rapidapi-host": RAPIDAPI_HOST,
-                "Content-Type": "application/json",
-            }
-            conn.request("POST", "/claude3", payload, headers)
-            res = conn.getresponse()
-            data = res.read().decode("utf-8")
-            conn.close()
-
-            try:
-                parsed = json.loads(data)
-                if isinstance(parsed, dict):
-                    return (
-                        parsed.get("result")
-                        or parsed.get("response")
-                        or parsed.get("content")
-                        or parsed.get("message")
-                        or parsed.get("text")
-                        or parsed.get("answer")
-                        or json.dumps(parsed)
-                    )
-                return str(parsed)
-            except json.JSONDecodeError:
-                return data
+            resp = requests.post(
+                OPENROUTER_URL,
+                headers={
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": MODEL,
+                    "messages": messages,
+                    "temperature": 0.4,
+                    "max_tokens": 2048,
+                },
+                timeout=60,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return data["choices"][0]["message"]["content"]
         except Exception as e:
             if attempt < MAX_RETRIES - 1:
-                time.sleep(2 ** (attempt + 1))
+                time.sleep(2)
             else:
-                raise RuntimeError(f"RapidAPI call failed after {MAX_RETRIES} retries: {e}")
+                raise RuntimeError(f"OpenRouter call failed: {e}")
 
 
-async def _call_rapidapi_async(messages: list[dict]) -> str:
-    """Async wrapper around the synchronous HTTP call."""
-    return await asyncio.to_thread(_call_rapidapi, messages)
+async def _call_llm_async(messages: list[dict]) -> str:
+    return await asyncio.to_thread(_call_llm, messages)
 
 
 def _parse_tool_call(text: str) -> tuple[dict | None, str]:
     """Extract TOOL_CALL from LLM response.
-    Returns (tool_call_dict, remaining_text) or (None, full_text).
-    Handles nested braces in args like {"args": {"symbol": "TCS.NS"}}."""
+    Handles nested braces like {"args": {"symbol": "TCS.NS"}}."""
     marker = re.search(r'TOOL_CALL:\s*\{', text)
     if not marker:
         return None, text
-    start = marker.end() - 1  # position of the opening {
+    start = marker.end() - 1
     depth = 0
     for i in range(start, len(text)):
         if text[i] == '{':
@@ -127,11 +120,10 @@ def _parse_tool_call(text: str) -> tuple[dict | None, str]:
 
 async def run_chatbot():
     print("\n" + "━" * 65)
-    print("  🤖 Stock Analysis Chatbot  (RapidAPI Claude + MCP)")
+    print("  🤖 Stock Analysis Chatbot  (GPT-5.2 + MCP Tools)")
     print("     Type your question, or 'quit' to exit")
     print("━" * 65)
 
-    # Connect to MCP server
     server_params = StdioServerParameters(
         command=sys.executable,
         args=[MCP_SERVER],
@@ -149,14 +141,10 @@ async def run_chatbot():
                 print(f"     • {tn}")
             print()
 
-            # Conversation history — prime with system context
+            # Conversation with proper system message
             messages = [
-                {"role": "user", "content": SYSTEM_PROMPT + "\nAcknowledge briefly that you understand your role and available tools."}
+                {"role": "system", "content": SYSTEM_PROMPT},
             ]
-            print("  ⏳ Initializing AI...")
-            init_reply = await _call_rapidapi_async(messages)
-            messages.append({"role": "assistant", "content": init_reply})
-            print("  ✅ AI ready!\n")
 
             # Interactive loop
             while True:
@@ -178,20 +166,19 @@ async def run_chatbot():
                 try:
                     MAX_ROUNDS = 8
                     for round_num in range(MAX_ROUNDS):
-                        print("  ⏳ Thinking..." if round_num == 0 else "  ⏳ AI is analyzing the data...")
+                        print("  ⏳ Thinking..." if round_num == 0 else "  ⏳ Analyzing data...")
                         t0 = time.time()
-                        reply = await _call_rapidapi_async(messages)
-                        print(f"  ✓ AI responded in {time.time()-t0:.1f}s")
+                        reply = await _call_llm_async(messages)
+                        elapsed = time.time() - t0
+                        print(f"  ✓ AI responded in {elapsed:.1f}s")
 
                         tool_call, remaining_text = _parse_tool_call(reply)
 
                         if tool_call is None:
-                            # Final answer
                             messages.append({"role": "assistant", "content": reply})
                             print(f"\n  🤖 Assistant:\n{reply}\n")
                             break
 
-                        # Execute tool via MCP
                         tool_name = tool_call["name"]
                         tool_args = tool_call.get("args", {})
                         tool_args_str = {k: str(v) if not isinstance(v, str) else v for k, v in tool_args.items()}
@@ -210,19 +197,18 @@ async def run_chatbot():
                             print(f"  ✓ Tool returned in {time.time()-t1:.1f}s ({len(text)} chars)")
                         except asyncio.TimeoutError:
                             text = json.dumps({"error": "Tool timed out after 90s"})
-                            print("  ⚠️  Tool timed out after 90s")
+                            print("  ⚠️  Tool timed out")
                         except Exception as te:
                             text = json.dumps({"error": str(te)})
                             print(f"  ⚠️  Tool error: {te}")
 
-                        # Truncate very large results
-                        if len(text) > 8000:
-                            text = text[:8000] + "\n...(truncated)"
+                        if len(text) > 12000:
+                            text = text[:12000] + "\n...(truncated)"
 
                         messages.append({"role": "assistant", "content": reply})
                         messages.append({
                             "role": "user",
-                            "content": f"TOOL_RESULT for {tool_name}:\n{text}\n\nNow analyze this data and give a clear, detailed answer with specific numbers. Do NOT call another tool unless absolutely necessary."
+                            "content": f"TOOL_RESULT for {tool_name}:\n{text}\n\nAnalyze this data thoroughly. Provide specific numbers, comparisons, and a clear recommendation."
                         })
                     else:
                         print("  ⚠️  Max tool rounds reached.")
@@ -230,9 +216,9 @@ async def run_chatbot():
                 except Exception as e:
                     print(f"\n  ❌ Error: {e}\n")
 
-                # Keep conversation manageable
-                if len(messages) > 30:
-                    messages = messages[:2] + messages[-24:]
+                # Keep conversation manageable — keep system + last 28 messages
+                if len(messages) > 32:
+                    messages = messages[:1] + messages[-28:]
 
 
 # ── entry ────────────────────────────────────────────────────────────────
