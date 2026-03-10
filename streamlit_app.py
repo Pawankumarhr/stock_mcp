@@ -603,7 +603,7 @@ elif page == "🤖 AI Chatbot":
 
     # ── RapidAPI call ────────────────────────────────────────────────
     def _call_rapidapi_st(messages):
-        conn = http.client.HTTPSConnection(RAPIDAPI_HOST, timeout=60)
+        conn = http.client.HTTPSConnection(RAPIDAPI_HOST, timeout=45)
         payload = json.dumps({"messages": messages, "web_access": False})
         headers = {
             "x-rapidapi-key": RAPIDAPI_KEY,
@@ -626,39 +626,42 @@ elif page == "🤖 AI Chatbot":
             return data
 
     def _parse_tool_call_st(text):
-        match = re.search(r'TOOL_CALL:\s*(\{[^}]*\})', text, re.DOTALL)
-        if match:
-            try:
-                call = json.loads(match.group(1))
-                if "name" in call:
-                    return call, text[:match.start()].strip()
-            except json.JSONDecodeError:
-                pass
+        """Handle nested braces like {"args": {"symbol": "TCS.NS"}}."""
+        marker = re.search(r'TOOL_CALL:\s*\{', text)
+        if not marker:
+            return None, text
+        start = marker.end() - 1
+        depth = 0
+        for i in range(start, len(text)):
+            if text[i] == '{':
+                depth += 1
+            elif text[i] == '}':
+                depth -= 1
+                if depth == 0:
+                    json_str = text[start:i + 1]
+                    try:
+                        call = json.loads(json_str)
+                        if "name" in call:
+                            return call, text[:marker.start()].strip()
+                    except json.JSONDecodeError:
+                        break
         return None, text
 
     TOOL_PROMPT = """\
-You have access to these tools. To call a tool, reply with EXACTLY:
-TOOL_CALL: {"name": "<tool_name>", "args": {<arguments>}}
+To call a tool reply ONLY:  TOOL_CALL: {"name": "<tool>", "args": {<args>}}
 
 Tools:
-1. list_companies() → List tracked companies.
-2. get_stock_data(symbol) → Live price, volume, market cap, etc. Use .NS for Indian stocks.
-3. get_historical_data(symbol, period="1mo") → OHLCV history.
-4. get_options_chain(symbol) → Options chain.
-5. calculate_greeks(symbol) → Black-Scholes Greeks.
-6. get_news(company_name, symbol) → Latest news.
-7. generate_trading_signal(symbol) → BUY/SELL/HOLD signal.
-8. detect_unusual_activity(symbol) → Unusual volume/price activity.
-9. scan_market(filter_criteria="all") → Scan all companies with filter.
-10. get_sector_heatmap() → Sector performance.
-11. list_portfolio_users() → List portfolio users.
-12. get_portfolio_summary(user_id) → Portfolio P&L summary.
-13. get_transaction_history(user_id, symbol="") → Transaction history.
+1. list_companies()  2. get_stock_data(symbol) — .NS for India
+3. get_historical_data(symbol, period="1mo")  4. get_options_chain(symbol)
+5. calculate_greeks(symbol)  6. get_news(company_name, symbol)
+7. generate_trading_signal(symbol)  8. detect_unusual_activity(symbol)
+9. scan_market(filter_criteria="all")  10. get_sector_heatmap()
+11. list_portfolio_users()  12. get_portfolio_summary(user_id)
+13. get_transaction_history(user_id, symbol="")
 
-Rules: ONE TOOL_CALL per response. Use ₹ for .NS stocks, $ for US. Never guess data.
-For portfolio: first list_portfolio_users, then get_portfolio_summary."""
+Rules: ONE TOOL_CALL per reply. Use indian rupee for .NS, $ for US. Never guess."""
 
-    SYS_MSG = f"You are an expert stock analyst assistant.\nCompanies: AAPL, GOOGL, MSFT, AMZN, TSLA (US), RELIANCE.NS, TCS.NS, INFY.NS, HDFCBANK.NS, WIPRO.NS (India).\n{TOOL_PROMPT}"
+    SYS_MSG = f"You are an expert stock analyst. Companies: AAPL,GOOGL,MSFT,AMZN,TSLA(US); RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS,WIPRO.NS(India).\n{TOOL_PROMPT}"
 
     # ── Session state ────────────────────────────────────────────────
     if "chat_messages" not in st.session_state:

@@ -2,8 +2,10 @@ services:
   - type: web
     name: stock-analysis-platform
     runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: streamlit run streamlit_app.py --server.port $PORT --server.headless true --server.address 0.0.0.0
+    plan: free
+    region: oregon
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "streamlit run streamlit_app.py --server.port 10000 --server.headless true --server.address 0.0.0.0"
     envVars:
       - key: PYTHON_VERSION
         value: "3.11"

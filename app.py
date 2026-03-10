@@ -7,7 +7,7 @@ import sys, os, subprocess
 
 def main():
     here = os.path.dirname(os.path.abspath(__file__))
-    port = os.environ.get("PORT", "8501")
+    port = os.environ.get("PORT", "10000")
 
     cmd = [
         sys.executable, "-m", "streamlit", "run",

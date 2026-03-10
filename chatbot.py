@@ -25,43 +25,28 @@ MAX_RETRIES   = 3
 MCP_SERVER    = "mcp_server.py"
 
 TOOL_DESCRIPTIONS = """\
-You have access to these tools. To call a tool, reply with EXACTLY this format on its own line:
-TOOL_CALL: {"name": "<tool_name>", "args": {<arguments>}}
+To call a tool, reply ONLY with:  TOOL_CALL: {"name": "<tool>", "args": {<args>}}
 
-Available tools:
+Tools:
+1. list_companies()
+2. get_stock_data(symbol) — live price/volume/PE/52w. Use .NS for India.
+3. get_historical_data(symbol, period="1mo") — OHLCV.
+4. get_options_chain(symbol)
+5. calculate_greeks(symbol) — Black-Scholes Greeks.
+6. get_news(company_name, symbol)
+7. generate_trading_signal(symbol) — BUY/SELL/HOLD + confidence.
+8. detect_unusual_activity(symbol)
+9. scan_market(filter_criteria="all") — oversold/overbought/high_volume/bullish/bearish/near_52w_low/near_52w_high/all.
+10. get_sector_heatmap()
+11. list_portfolio_users()
+12. get_portfolio_summary(user_id)
+13. get_transaction_history(user_id, symbol="")
 
-1. list_companies() → List all tracked companies with ticker symbols.
-2. get_stock_data(symbol) → Live stock data: price, open, high, low, volume, market cap, PE, dividend yield, beta, 52-week range, sector. Use .NS suffix for Indian NSE stocks (e.g. RELIANCE.NS).
-3. get_historical_data(symbol, period="1mo") → Historical OHLCV. period: 1d,5d,1mo,3mo,6mo,1y,2y,5y,10y,ytd,max.
-4. get_options_chain(symbol) → Options chain (calls & puts). Indian stocks use ADR mapping.
-5. calculate_greeks(symbol) → Black-Scholes Options Greeks (Delta, Gamma, Theta, Vega).
-6. get_news(company_name, symbol) → Latest news from NewsAPI + Google News.
-7. generate_trading_signal(symbol) → BUY/SELL/HOLD signal with confidence %.
-8. detect_unusual_activity(symbol) → Volume spikes, price gaps, volatility bursts, 52-week proximity.
-9. scan_market(filter_criteria="all") → Scan all companies. Filters: oversold, overbought, high_volume, bullish, bearish, near_52w_low, near_52w_high, all.
-10. get_sector_heatmap() → Sector performance heatmap.
-11. list_portfolio_users() → List all registered portfolio users with IDs.
-12. get_portfolio_summary(user_id) → Portfolio with LIVE P&L per holding + totals. Pass numeric user_id.
-13. get_transaction_history(user_id, symbol="") → Transaction history, optionally filtered by symbol.
-
-IMPORTANT RULES:
-- Only ONE TOOL_CALL per response.
-- After you receive tool results, analyze them and give a clear answer with specific numbers.
-- Use ₹ for Indian (.NS) stocks, $ for US stocks.
-- For portfolio questions: first call list_portfolio_users, then get_portfolio_summary with the user_id.
-- NEVER guess data — always use tools to fetch real data.
-- If you don't need a tool, just answer directly without TOOL_CALL.
+Rules: ONE TOOL_CALL per reply. Use ₹ for .NS, $ for US. Never guess data.
 """
 
-SYSTEM_PROMPT = f"""\
-You are an expert stock-market analyst assistant.
-
-Available companies:
-  US   : Apple (AAPL), Google (GOOGL), Microsoft (MSFT), Amazon (AMZN), Tesla (TSLA)
-  India: Reliance (RELIANCE.NS), TCS (TCS.NS), Infosys (INFY.NS), HDFC Bank (HDFCBANK.NS), Wipro (WIPRO.NS)
-
-{TOOL_DESCRIPTIONS}
-"""
+SYSTEM_PROMPT = f"""You are an expert stock analyst. Companies: AAPL,GOOGL,MSFT,AMZN,TSLA (US); RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS,WIPRO.NS (India).
+{TOOL_DESCRIPTIONS}"""
 
 
 # ── RapidAPI Claude call ─────────────────────────────────────────────────
@@ -70,7 +55,7 @@ def _call_rapidapi(messages: list[dict]) -> str:
     """Send messages to RapidAPI Claude3 endpoint and return the response text."""
     for attempt in range(MAX_RETRIES):
         try:
-            conn = http.client.HTTPSConnection(RAPIDAPI_HOST, timeout=60)
+            conn = http.client.HTTPSConnection(RAPIDAPI_HOST, timeout=45)
             payload = json.dumps({
                 "messages": messages,
                 "web_access": False,
@@ -114,17 +99,27 @@ async def _call_rapidapi_async(messages: list[dict]) -> str:
 
 def _parse_tool_call(text: str) -> tuple[dict | None, str]:
     """Extract TOOL_CALL from LLM response.
-    Returns (tool_call_dict, remaining_text) or (None, full_text)."""
-    pattern = r'TOOL_CALL:\s*(\{[^}]*\})'
-    match = re.search(pattern, text, re.DOTALL)
-    if match:
-        try:
-            call = json.loads(match.group(1))
-            if "name" in call:
-                remaining = text[:match.start()].strip()
-                return call, remaining
-        except json.JSONDecodeError:
-            pass
+    Returns (tool_call_dict, remaining_text) or (None, full_text).
+    Handles nested braces in args like {"args": {"symbol": "TCS.NS"}}."""
+    marker = re.search(r'TOOL_CALL:\s*\{', text)
+    if not marker:
+        return None, text
+    start = marker.end() - 1  # position of the opening {
+    depth = 0
+    for i in range(start, len(text)):
+        if text[i] == '{':
+            depth += 1
+        elif text[i] == '}':
+            depth -= 1
+            if depth == 0:
+                json_str = text[start:i + 1]
+                try:
+                    call = json.loads(json_str)
+                    if "name" in call:
+                        remaining = text[:marker.start()].strip()
+                        return call, remaining
+                except json.JSONDecodeError:
+                    break
     return None, text
 
 
