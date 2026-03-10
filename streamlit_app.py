@@ -91,7 +91,7 @@ if page == "🏠 Dashboard":
         "🔍 Market Scanner": "Scan all companies with filters (oversold, bullish, etc.)",
         "🌡️ Sector Heatmap": "Sector performance — 1-day, 5-day, 1-month % changes",
         "💰 Portfolio": "Buy/sell stocks at historical prices, track P&L with SQLite",
-        "🤖 AI Chatbot": "Natural language queries powered by Gemini LLM + MCP tools",
+        "🤖 AI Chatbot": "Natural language queries powered by Claude AI + live tools",
     }
     for feat, desc in features.items():
         st.markdown(f"**{feat}** — {desc}")
