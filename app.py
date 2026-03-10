@@ -1,4 +1,4 @@
-import json, os
+import json, os, sys
 from datetime import datetime
 from tools.live_stock import (
     COMPANIES, display_menu, fetch_stock_data, fetch_historical_data,
@@ -12,6 +12,7 @@ from tools.scan_market import (
     FILTER_OPTIONS, scan_market, display_filter_menu, display_scan_results,
 )
 from tools.sector_heatmap import get_sector_heatmap, display_sector_heatmap
+from portfolio.menu import run_portfolio
 
 OUTPUT_DIR = "output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -49,10 +50,38 @@ def save_json(data: dict, symbol: str):
 def main():
     while True:
         display_menu()
-        choice = input("\n  Select a company (0-10) or [S]can / [H]eatmap: ").strip().upper()
+        choice = input("\n  Select (0-10) or [S]can / [H]eatmap / [P]ortfolio / [W]eb UI / [C]hatbot: ").strip().upper()
         if choice == "0":
             print("\n  Goodbye! 👋\n")
             break
+
+        # --- Portfolio Simulator ---
+        if choice == "P":
+            run_portfolio()
+            continue
+
+        # --- Streamlit Web UI ---
+        if choice == "W":
+            import subprocess
+            print("\n  🌐 Launching Streamlit Web UI...")
+            print("     Open http://localhost:8501 in your browser")
+            print("     Press Ctrl+C to stop the server\n")
+            try:
+                subprocess.run(
+                    [sys.executable, "-m", "streamlit", "run", "streamlit_app.py",
+                     "--server.headless", "true"],
+                    cwd=os.path.dirname(os.path.abspath(__file__)),
+                )
+            except KeyboardInterrupt:
+                print("\n  Streamlit stopped.")
+            continue
+
+        # --- Chatbot Mode ---
+        if choice == "C":
+            print("\n  🚀 Launching AI Chatbot (Gemini + MCP)...\n")
+            from chatbot import main as chatbot_main
+            chatbot_main()
+            continue
 
         # --- Tool 9: Market Scanner (global) ---
         if choice == "S":

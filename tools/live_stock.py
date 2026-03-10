@@ -32,6 +32,12 @@ def display_menu():
         name, symbol = COMPANIES[key]
         print(f"  [{key:>2}] {name} ({symbol})")
     print(f"  [ 0] Exit")
+    print("  ─────────────────────────────────")
+    print("  [ S] 🔍 Market Scanner")
+    print("  [ H] 🌡️  Sector Heatmap")
+    print("  [ P] 💰 Portfolio Simulator")
+    print("  [ W] 🌐 Streamlit Web UI")
+    print("  [ C] 🤖 AI Chatbot")
     print("=" * 55)
 
 
