@@ -7,6 +7,11 @@ from tools.live_stock import (
 from tools.news_fetch import fetch_news, display_news
 from tools.generating_signal import generate_signal, display_signal
 from tools.cal_greek import build_contracts_from_chain, display_greeks
+from tools.detect_unusual import detect_unusual_activity, display_unusual_activity
+from tools.scan_market import (
+    FILTER_OPTIONS, scan_market, display_filter_menu, display_scan_results,
+)
+from tools.sector_heatmap import get_sector_heatmap, display_sector_heatmap
 
 OUTPUT_DIR = "output"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -44,10 +49,34 @@ def save_json(data: dict, symbol: str):
 def main():
     while True:
         display_menu()
-        choice = input("\n  Select a company (0-10): ").strip()
+        choice = input("\n  Select a company (0-10) or [S]can / [H]eatmap: ").strip().upper()
         if choice == "0":
             print("\n  Goodbye! 👋\n")
             break
+
+        # --- Tool 9: Market Scanner (global) ---
+        if choice == "S":
+            display_filter_menu()
+            filt = input("  Choose filter (1-8): ").strip()
+            criteria = FILTER_OPTIONS.get(filt, "all")
+            try:
+                scan_data = scan_market(criteria)
+                display_scan_results(scan_data)
+                save_json(scan_data, f"scan_{criteria}")
+            except Exception as e:
+                print(f"  ❌ Scan error: {e}")
+            continue
+
+        # --- Tool 10: Sector Heatmap (global) ---
+        if choice == "H":
+            try:
+                heatmap = get_sector_heatmap()
+                display_sector_heatmap(heatmap)
+                save_json(heatmap, "sector_heatmap")
+            except Exception as e:
+                print(f"  ❌ Heatmap error: {e}")
+            continue
+
         if choice not in COMPANIES:
             print("\n  ⚠️  Invalid choice.")
             continue
@@ -112,6 +141,15 @@ def main():
             result["trading_signal"] = sig
         except Exception as e:
             print(f"  ❌ Signal error: {e}")
+
+        # --- Tool 8: Detect Unusual Activity ---
+        print(f"  ⏳ Detecting unusual activity...")
+        try:
+            unusual = detect_unusual_activity(symbol)
+            display_unusual_activity(unusual)
+            result["unusual_activity"] = unusual
+        except Exception as e:
+            print(f"  ❌ Unusual-activity error: {e}")
 
         # --- Save JSON ---
         save_json(result, symbol.replace(".", "_"))

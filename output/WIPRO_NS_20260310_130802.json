@@ -1,0 +1,458 @@
+{
+  "company": "Wipro",
+  "symbol": "WIPRO.NS",
+  "stock_data": {
+    "symbol": "WIPRO.NS",
+    "name": "WIPRO LTD",
+    "exchange": "NSI",
+    "currency": "INR",
+    "price": 198.96,
+    "open": 200.5,
+    "high": 200.58,
+    "low": 197.42,
+    "prev_close": 198.75,
+    "volume": 6895258,
+    "market_cap": 2084405116928,
+    "52w_high": 279.3,
+    "52w_low": 193.03,
+    "pe_ratio": 15.765452,
+    "dividend_yield": 8.55,
+    "beta": 0.365,
+    "sector": "Technology",
+    "industry": "Information Technology Services",
+    "timestamp": "2026-03-10 13:07:58"
+  },
+  "historical_ohlc": [
+    {
+      "date": "2026-02-10",
+      "open": 229.98,
+      "high": 232.86,
+      "low": 227.2,
+      "close": 231.47,
+      "volume": 12435622
+    },
+    {
+      "date": "2026-02-11",
+      "open": 231.47,
+      "high": 233.0,
+      "low": 229.5,
+      "close": 229.81,
+      "volume": 7874912
+    },
+    {
+      "date": "2026-02-12",
+      "open": 226.2,
+      "high": 226.26,
+      "low": 218.5,
+      "close": 219.08,
+      "volume": 40899346
+    },
+    {
+      "date": "2026-02-13",
+      "open": 210.65,
+      "high": 216.48,
+      "low": 209.01,
+      "close": 214.09,
+      "volume": 23721186
+    },
+    {
+      "date": "2026-02-16",
+      "open": 214.62,
+      "high": 216.91,
+      "low": 210.11,
+      "close": 213.26,
+      "volume": 20754327
+    },
+    {
+      "date": "2026-02-17",
+      "open": 213.26,
+      "high": 219.39,
+      "low": 212.26,
+      "close": 215.69,
+      "volume": 26941553
+    },
+    {
+      "date": "2026-02-18",
+      "open": 216.2,
+      "high": 216.4,
+      "low": 210.26,
+      "close": 211.95,
+      "volume": 22679760
+    },
+    {
+      "date": "2026-02-19",
+      "open": 214.0,
+      "high": 215.44,
+      "low": 210.4,
+      "close": 211.21,
+      "volume": 14151588
+    },
+    {
+      "date": "2026-02-20",
+      "open": 209.7,
+      "high": 211.96,
+      "low": 208.25,
+      "close": 209.86,
+      "volume": 17690420
+    },
+    {
+      "date": "2026-02-23",
+      "open": 210.36,
+      "high": 211.74,
+      "low": 204.28,
+      "close": 205.89,
+      "volume": 20946229
+    },
+    {
+      "date": "2026-02-24",
+      "open": 203.0,
+      "high": 203.29,
+      "low": 199.36,
+      "close": 200.14,
+      "volume": 25036686
+    },
+    {
+      "date": "2026-02-25",
+      "open": 201.31,
+      "high": 205.48,
+      "low": 201.31,
+      "close": 201.92,
+      "volume": 13979068
+    },
+    {
+      "date": "2026-02-26",
+      "open": 203.71,
+      "high": 204.63,
+      "low": 199.12,
+      "close": 201.08,
+      "volume": 14378069
+    },
+    {
+      "date": "2026-02-27",
+      "open": 204.0,
+      "high": 204.0,
+      "low": 200.05,
+      "close": 200.96,
+      "volume": 13288519
+    },
+    {
+      "date": "2026-03-02",
+      "open": 195.0,
+      "high": 200.36,
+      "low": 194.7,
+      "close": 198.57,
+      "volume": 10486866
+    },
+    {
+      "date": "2026-03-04",
+      "open": 196.01,
+      "high": 197.12,
+      "low": 194.51,
+      "close": 195.55,
+      "volume": 19562075
+    },
+    {
+      "date": "2026-03-05",
+      "open": 196.4,
+      "high": 196.97,
+      "low": 193.22,
+      "close": 195.68,
+      "volume": 13149281
+    },
+    {
+      "date": "2026-03-06",
+      "open": 195.6,
+      "high": 198.93,
+      "low": 195.0,
+      "close": 195.4,
+      "volume": 9022914
+    },
+    {
+      "date": "2026-03-09",
+      "open": 194.0,
+      "high": 199.5,
+      "low": 193.03,
+      "close": 198.75,
+      "volume": 25862728
+    },
+    {
+      "date": "2026-03-10",
+      "open": 200.5,
+      "high": 200.58,
+      "low": 197.42,
+      "close": 198.96,
+      "volume": 6895258
+    }
+  ],
+  "options_chain": {
+    "available": true,
+    "expiration": "2026-03-20",
+    "symbol": "WIT",
+    "top_calls": [
+      {
+        "strike": 2.5,
+        "lastPrice": 0.01,
+        "volume": 2,
+        "openInterest": 0,
+        "impliedVolatility": 0.12500875
+      },
+      {
+        "strike": 5.0,
+        "lastPrice": 0.05,
+        "volume": 1,
+        "openInterest": 0,
+        "impliedVolatility": 0.500005
+      },
+      {
+        "strike": 7.5,
+        "lastPrice": 0.35,
+        "volume": 3,
+        "openInterest": 12,
+        "impliedVolatility": 6.14062732421875
+      }
+    ],
+    "top_puts": [
+      {
+        "strike": 2.5,
+        "lastPrice": 0.25,
+        "volume": 10.0,
+        "openInterest": 0,
+        "impliedVolatility": 0.00001
+      },
+      {
+        "strike": 5.0,
+        "lastPrice": 2.5,
+        "volume": 0.0,
+        "openInterest": 0,
+        "impliedVolatility": 0.00001
+      },
+      {
+        "strike": 7.5,
+        "lastPrice": 5.02,
+        "volume": 1.0,
+        "openInterest": 0,
+        "impliedVolatility": 4.73437908203125
+      }
+    ],
+    "note": "Options via US ADR (WIT) \u2014 NSE options not on Yahoo Finance"
+  },
+  "options_greeks": [
+    {
+      "option_type": "call",
+      "S": 198.96,
+      "K": 2.5,
+      "T_years": 0.024658,
+      "T_days": 9.0,
+      "r": 0.05,
+      "sigma": 0.12500875,
+      "bs_price": 196.4631,
+      "delta": 1.0,
+      "gamma": 0.0,
+      "theta": -0.000342,
+      "vega": 0.0,
+      "timestamp": "2026-03-10 13:07:59",
+      "market_price": 0.01
+    },
+    {
+      "option_type": "call",
+      "S": 198.96,
+      "K": 5.0,
+      "T_years": 0.024658,
+      "T_days": 9.0,
+      "r": 0.05,
+      "sigma": 0.500005,
+      "bs_price": 193.9662,
+      "delta": 1.0,
+      "gamma": 0.0,
+      "theta": -0.000684,
+      "vega": 0.0,
+      "timestamp": "2026-03-10 13:07:59",
+      "market_price": 0.05
+    },
+    {
+      "option_type": "call",
+      "S": 198.96,
+      "K": 7.5,
+      "T_years": 0.024658,
+      "T_days": 9.0,
+      "r": 0.05,
+      "sigma": 6.14062732421875,
+      "bs_price": 191.4721,
+      "delta": 0.999948,
+      "gamma": 1e-06,
+      "theta": -0.003285,
+      "vega": 0.000066,
+      "timestamp": "2026-03-10 13:07:59",
+      "market_price": 0.35
+    },
+    {
+      "option_type": "put",
+      "S": 198.96,
+      "K": 2.5,
+      "T_years": 0.024658,
+      "T_days": 9.0,
+      "r": 0.05,
+      "sigma": 0.00001,
+      "bs_price": 0.0,
+      "delta": 0.0,
+      "gamma": 0.0,
+      "theta": 0.0,
+      "vega": 0.0,
+      "timestamp": "2026-03-10 13:07:59",
+      "market_price": 0.25
+    },
+    {
+      "option_type": "put",
+      "S": 198.96,
+      "K": 5.0,
+      "T_years": 0.024658,
+      "T_days": 9.0,
+      "r": 0.05,
+      "sigma": 0.00001,
+      "bs_price": 0.0,
+      "delta": 0.0,
+      "gamma": 0.0,
+      "theta": 0.0,
+      "vega": 0.0,
+      "timestamp": "2026-03-10 13:07:59",
+      "market_price": 2.5
+    },
+    {
+      "option_type": "put",
+      "S": 198.96,
+      "K": 7.5,
+      "T_years": 0.024658,
+      "T_days": 9.0,
+      "r": 0.05,
+      "sigma": 4.73437908203125,
+      "bs_price": 0.0,
+      "delta": -1e-06,
+      "gamma": 0.0,
+      "theta": -0.000035,
+      "vega": 1e-06,
+      "timestamp": "2026-03-10 13:07:59",
+      "market_price": 5.02
+    }
+  ],
+  "news": {
+    "company": "Wipro",
+    "symbol": "WIPRO.NS",
+    "fetched_at": "2026-03-10 13:08:01",
+    "newsapi": [
+      {
+        "title": "Global Market | Japan's Nikkei 225 share index falls more than 6% as oil soars over $100 a barrel",
+        "description": "Asian stock markets experienced a sharp decline early Monday. Japan's Nikkei 225 index dropped over 6%. South Korea's Kospi also sank significantly. Shares in Australia and New Zealand saw notable falls. This market reaction follows a surge in oil prices. Bre\u2026",
+        "source": "The Times of India",
+        "url": "https://economictimes.indiatimes.com/markets/us-stocks/news/global-market-japans-nikkei-225-share-index-falls-more-than-6-as-oil-soars-over-100-a-barrel/articleshow/129303639.cms",
+        "published": "2026-03-09T02:18:26Z"
+      },
+      {
+        "title": "BoB raises Rs 10,000 crore via green infra bonds",
+        "description": "Bank of Baroda successfully raised \u20b910,000 crore through its inaugural 7-year green infra bond, priced at 7.10%. The issuance, aimed at financing renewable energy and energy-efficient projects, saw strong demand from domestic institutional investors. This mar\u2026",
+        "source": "The Times of India",
+        "url": "https://economictimes.indiatimes.com/markets/bonds/bob-raises-rs-10000-crore-via-green-infra-bonds/articleshow/129059170.cms",
+        "published": "2026-03-05T00:38:11Z"
+      },
+      {
+        "title": "Stock broking firm Shreni Shares files IPO papers with Sebi",
+        "description": "Stock broking firm Shreni Shares is planning an Initial Public Offering. The company has filed preliminary papers with Sebi. The public issue includes a fresh share sale and an offer for sale by existing shareholders. Proceeds will fund working capital and re\u2026",
+        "source": "The Times of India",
+        "url": "https://economictimes.indiatimes.com/markets/ipos/fpos/stock-broking-firm-shreni-shares-files-ipo-papers-with-sebi/articleshow/129134948.cms",
+        "published": "2026-03-06T05:34:43Z"
+      },
+      {
+        "title": "US Stock Market | US could lift sanctions on more Russian oil, says Bessent",
+        "description": "U.S. Treasury Secretary Scott Bessent indicated that more sanctions on Russian oil could be lifted, following a recent 30-day waiver that permits Russian crude stranded at sea to be sold to India. Bessent shared these remarks during an interview with Fox Busi\u2026",
+        "source": "The Times of India",
+        "url": "https://economictimes.indiatimes.com/markets/us-stocks/news/us-stock-market-us-could-lift-sanctions-on-more-russian-oil-says-bessent/articleshow/129193706.cms",
+        "published": "2026-03-07T03:55:30Z"
+      },
+      {
+        "title": "US Stock Market | Central bank independence critical in inflation fight, says Fed's Goolsbee",
+        "description": "Chicago Fed President Austan Goolsbee stressed that central bank independence is vital for controlling inflation and maintaining economic stability. Speaking in New York, he said monetary policy free from political pressure helps preserve confidence in econom\u2026",
+        "source": "The Times of India",
+        "url": "https://economictimes.indiatimes.com/markets/us-stocks/news/us-stock-market-central-bank-independence-critical-in-inflation-fight-says-feds-goolsbee/articleshow/129132645.cms",
+        "published": "2026-03-06T04:41:02Z"
+      }
+    ],
+    "google_news": [
+      {
+        "title": "Explained: Why Wipro, Infosys and other IT stocks rose up to 1% despite Rs 12 lakh crore market selloff - The Economic Times",
+        "link": "https://news.google.com/rss/articles/CBMihAJBVV95cUxPRlB3NHZHWmhKZlh4VGljV0FqcFhxWXRsOWtYV204cktMS1dlZDZMTTFVWDYyUlBLU3k5eFQ1MFprMVExNHFxQmExaHBRVTdEZ3hnYzZPODA2eGhwRmJqRXNRRENqbVExeWYyZU4tRFBkWnNxR3gxSXVrbTdCaUxYQzZhakEzVTNYSUhiZHpTYmJuRDZjalJDQU9mbDZGb0lEc1BaZFlmVXV6V0R5YnJBNWczbmdEbGRBcU11WGhROTlxWXpjU1BJT1VfM2o2S3NETjQ4a1o5STFySkdOUlR6TDBEUW1tYmFMRUl5V2p3U3p2UUxXUHBVQy0zSXN5QVNFeUZrU9IBigJBVV95cUxQNEtyNnNtUlljd2N6allmZFR1eU5Xdm1YY1BYdlBSQnpyTWtBUmJIWHU5N0lCUUdhYXhxOWh4cW1tc1c3YzE5ZUJLaFVJeE5CSm4yZkk3bThLSDNYZmI0TFYxa2ZMRF9JQW00aWxRNi1oQmJNMWFELUt2aHdkQ3RyMnV1NjdvdGRiMGNRMUkyeVVjQUlvcHlIaGp4V1NYNHRRQVRRQmtjU3k2a2l4VXByT05NVUljY0NsWmFuMDZrdDVlRW5jWm1CT2JsUGk3T0hncmdQaHhnVHQybXRJYlV6ZDA0RklKc0tBT3dKMGw0V05YNnBKUWVQZVdycXk2V0tkRHR5ZnRCNDk0Zw?oc=5",
+        "published": "Mon, 09 Mar 2026 07:49:41 GMT",
+        "source": "The Economic Times"
+      },
+      {
+        "title": "Wipro shares hit 52-week low amid Est\u00e9e Lauder contract loss to Accenture - BusinessLine",
+        "link": "https://news.google.com/rss/articles/CBMi5wFBVV95cUxOSTFyXzRPNlNtbDZObFB2RU41M29pYWVncTRUVFkyTkxQcHdwdVJvSE1QXzY3UWRDWkd1WDBWR2hVQld5Nk8zX3dfemNYTnFMcklELVUyMmNENVhrUWtibXJsN2J5dm4wT1BLYW5ERkxCT25MU215azlla1U5bGp6bUhuSjRUMGNmbFhZSmdkSmtNemJNV0xsUkNpb1pzbUJ1YW1HN1dwU0lCZFE4VmhBUjEwUkV6Z29OakQxNEVNcGdNd0c3dC05ZFhqVE5uRDNkYVl6UnNTdWU4c2FoaU1KUDlHWVVhaTTSAe4BQVVfeXFMT1FDcS1IUkNhVF9aOVlnMXlnZW4xTWU0SnZRZndxRDlYdTFMMWNMU1hVQjFMeWllOG9KWnQ3R0cxdWJNUFFJZ0QxdGRRbG5QVFJsOTdGRy1vVUpCd0QwQ2k1QVhrOTBxNTJiaUJ0Umk4dDlLdFVHeXhGRWd3eFZ3b2toVUY1d3MxNDl4OUdpNEpRT0tUMFppQjNBNGZBNUF1Y1FUVWZlYmczbHNPM0pwMGJsbm5rTk1iUVl2cFhUSGdsQnc0SXVfR19RWldwaU03OGhpMmNCdHROZk91WFplZUUwRkI3VzJpUjdEaGxCdw?oc=5",
+        "published": "Wed, 04 Mar 2026 06:11:36 GMT",
+        "source": "BusinessLine"
+      },
+      {
+        "title": "Wipro to Ring The Closing Bell\u00ae at the New York Stock Exchange - Yahoo Finance",
+        "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTFAzb1lvQk5IcHMwMDZ0M2FQRktsOFczQ0piRXJzUFJwQzJBTXFheFZwbnhGcGpBWWh5NkRPY3UtMEFqSlQxNHFmR3VuM0dwY2ZnWjFDeGxMVXVTa0lYbE5WcUNKMkRUc21tbk5WZHpZRVpWWGVUZjlSbDJZUnpvdnc?oc=5",
+        "published": "Thu, 30 Oct 2025 07:00:00 GMT",
+        "source": "Yahoo Finance"
+      },
+      {
+        "title": "Wipro Ltd. Stock Falls to 52-Week Low of Rs.193.1 Amidst Prolonged Underperformance - Markets Mojo",
+        "link": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPUzRqbDQzTTJ5SmpOX05wUlVOLVY3Q29hV0FSLVJOX2FvcFhEQlI2VC1VTk5xdkpQZE40ZzBpRkVscU4zS2swMk1LZFhtNnZBVjhsMEJfNFRCakwzekp5anNpX3ctVEh3SXBqSFdVZ3RQcGhIZlc2V25IQXNWOUl6VlZUZ09xZXZNOUczR0JWZ2dBeWh1MmhpRUhNb21OT3NHalR5clJZQ2t1Q2pOV0tCRWhQeS1FZzN6aEtIYzlQbXdvYi05MmhhS2hxcWRuZWxzZDh5WQ?oc=5",
+        "published": "Mon, 09 Mar 2026 09:14:45 GMT",
+        "source": "Markets Mojo"
+      },
+      {
+        "title": "WIPRO Outlook for the Week (March 09, 2026 \u2013 March 13, 2026) - Equitypandit",
+        "link": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1rbXFQam1ReFc5bkdMZ2xSQXdpcnFKYzM5cm45ek5VOUdLdGRfX2hNTW9ORnRtU3k4cmdfTDlmQVVSVG4zdUlZTHdqTExFWU90eVA5RW1LVkNtSkVDRlBfc3R3VFN5cFE?oc=5",
+        "published": "Fri, 06 Mar 2026 08:00:00 GMT",
+        "source": "Equitypandit"
+      }
+    ]
+  },
+  "trading_signal": {
+    "symbol": "WIPRO.NS",
+    "timeframe": "3mo",
+    "current_price": 198.96,
+    "signal": "SELL",
+    "confidence": 20,
+    "score": -20,
+    "indicators": {
+      "rsi": 19.77,
+      "sma_20": 207.47,
+      "sma_50": 231.03,
+      "ema_12": 201.81,
+      "ema_26": 211.85,
+      "macd_line": -10.04,
+      "macd_signal": 198.52,
+      "macd_histogram": -208.56,
+      "bollinger_upper": 228.53,
+      "bollinger_mid": 207.47,
+      "bollinger_lower": 186.4
+    },
+    "reasons": [
+      "RSI=19.77 (oversold \u2192 bullish)",
+      "SMA20(207.47) < SMA50(231.03) \u2192 Death cross (bearish)",
+      "Price below SMA20 (bearish)",
+      "MACD(-10.04) < Signal(198.52) \u2192 bearish"
+    ],
+    "timestamp": "2026-03-10 13:08:01"
+  },
+  "unusual_activity": {
+    "symbol": "WIPRO.NS",
+    "current_price": 198.96,
+    "analysis_period": "3 months",
+    "alerts": [],
+    "anomalies": [],
+    "total_alerts": 0,
+    "total_anomalies": 0,
+    "stats": {
+      "5d_avg_volume": 14898443,
+      "20d_avg_volume": 17987818,
+      "volume_ratio": 0.83,
+      "5d_volatility_pct": 0.83,
+      "20d_volatility_pct": 5.08,
+      "5d_return_pct": 0.2,
+      "20d_return_pct": -13.53
+    },
+    "timestamp": "2026-03-10 13:08:02"
+  }
+}
