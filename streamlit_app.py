@@ -589,6 +589,8 @@ elif page == "🤖 AI Chatbot":
     OPENROUTER_API_KEY = "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"
     OPENROUTER_URL     = "https://openrouter.ai/api/v1/chat/completions"
     MODEL              = "openai/gpt-4.1-mini"
+    GEMINI_API_KEY     = "AIzaSyDFTmdQlJwr1SSXIQ2fioNYH8WPihbe3io"
+    GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
     # ── Direct tool mapping ──────────────────────────────────────────
     TOOL_MAP = {
@@ -630,8 +632,8 @@ elif page == "🤖 AI Chatbot":
                        "net_profit_loss": pnl, "profit_loss_pct": pct},
         }, default=str)
 
-    # ── OpenRouter API call ──────────────────────────────────────────
-    def _call_llm_st(messages):
+    # ── LLM calls (OpenRouter primary, Gemini fallback) ──────────────
+    def _call_openrouter_st(messages):
         resp = _requests.post(
             OPENROUTER_URL,
             headers={
@@ -647,8 +649,41 @@ elif page == "🤖 AI Chatbot":
             timeout=60,
         )
         resp.raise_for_status()
-        data = resp.json()
-        return data["choices"][0]["message"]["content"]
+        return resp.json()["choices"][0]["message"]["content"]
+
+    def _call_gemini_st(messages):
+        contents = []
+        system_text = ""
+        for m in messages:
+            role = m["role"]
+            text = m["content"]
+            if role == "system":
+                system_text = text
+                continue
+            gemini_role = "user" if role == "user" else "model"
+            contents.append({"role": gemini_role, "parts": [{"text": text}]})
+        if system_text and contents and contents[0]["role"] == "user":
+            contents[0]["parts"][0]["text"] = system_text + "\n\n" + contents[0]["parts"][0]["text"]
+        elif system_text:
+            contents.insert(0, {"role": "user", "parts": [{"text": system_text}]})
+        resp = _requests.post(
+            f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+            headers={"Content-Type": "application/json"},
+            json={
+                "contents": contents,
+                "generationConfig": {"temperature": 0.4, "maxOutputTokens": 2048},
+            },
+            timeout=60,
+        )
+        resp.raise_for_status()
+        return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+
+    def _call_llm_st(messages):
+        """Try OpenRouter first, fall back to Gemini 1.5."""
+        try:
+            return _call_openrouter_st(messages)
+        except Exception:
+            return _call_gemini_st(messages)
 
     def _parse_tool_call_st(text):
         """Handle nested braces like {"args": {"symbol": "TCS.NS"}}."""

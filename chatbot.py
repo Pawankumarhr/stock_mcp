@@ -22,7 +22,10 @@ from mcp.client.stdio import stdio_client
 OPENROUTER_API_KEY = "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"
 OPENROUTER_URL     = "https://openrouter.ai/api/v1/chat/completions"
 MODEL              = "openai/gpt-4.1-mini"
-MAX_RETRIES        = 2
+
+GEMINI_API_KEY     = "AIzaSyDFTmdQlJwr1SSXIQ2fioNYH8WPihbe3io"
+GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+
 MCP_SERVER         = "mcp_server.py"
 
 SYSTEM_PROMPT = """\
@@ -57,34 +60,71 @@ Rules:
 """
 
 
-# ── OpenRouter API call ──────────────────────────────────────────────────
+# ── LLM API calls (OpenRouter primary, Gemini fallback) ─────────────────
+
+def _call_openrouter(messages: list[dict]) -> str:
+    """Call OpenRouter chat completions."""
+    resp = requests.post(
+        OPENROUTER_URL,
+        headers={
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json",
+        },
+        json={
+            "model": MODEL,
+            "messages": messages,
+            "temperature": 0.4,
+            "max_tokens": 2048,
+        },
+        timeout=60,
+    )
+    resp.raise_for_status()
+    return resp.json()["choices"][0]["message"]["content"]
+
+
+def _call_gemini(messages: list[dict]) -> str:
+    """Fallback: call Gemini 1.5 Flash when OpenRouter fails."""
+    # Convert OpenAI-style messages to Gemini format
+    contents = []
+    system_text = ""
+    for m in messages:
+        role = m["role"]
+        text = m["content"]
+        if role == "system":
+            system_text = text
+            continue
+        gemini_role = "user" if role == "user" else "model"
+        contents.append({"role": gemini_role, "parts": [{"text": text}]})
+    # Prepend system instruction as first user message if not already there
+    if system_text and contents and contents[0]["role"] == "user":
+        contents[0]["parts"][0]["text"] = system_text + "\n\n" + contents[0]["parts"][0]["text"]
+    elif system_text:
+        contents.insert(0, {"role": "user", "parts": [{"text": system_text}]})
+
+    resp = requests.post(
+        f"{GEMINI_URL}?key={GEMINI_API_KEY}",
+        headers={"Content-Type": "application/json"},
+        json={
+            "contents": contents,
+            "generationConfig": {"temperature": 0.4, "maxOutputTokens": 2048},
+        },
+        timeout=60,
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    return data["candidates"][0]["content"]["parts"][0]["text"]
+
 
 def _call_llm(messages: list[dict]) -> str:
-    """Call OpenRouter chat completions and return assistant text."""
-    for attempt in range(MAX_RETRIES):
+    """Try OpenRouter first, fall back to Gemini 1.5 on any error."""
+    try:
+        return _call_openrouter(messages)
+    except Exception as e1:
+        print(f"  ⚠️  OpenRouter failed ({e1}), falling back to Gemini...")
         try:
-            resp = requests.post(
-                OPENROUTER_URL,
-                headers={
-                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": MODEL,
-                    "messages": messages,
-                    "temperature": 0.4,
-                    "max_tokens": 2048,
-                },
-                timeout=60,
-            )
-            resp.raise_for_status()
-            data = resp.json()
-            return data["choices"][0]["message"]["content"]
-        except Exception as e:
-            if attempt < MAX_RETRIES - 1:
-                time.sleep(2)
-            else:
-                raise RuntimeError(f"OpenRouter call failed: {e}")
+            return _call_gemini(messages)
+        except Exception as e2:
+            raise RuntimeError(f"Both LLMs failed — OpenRouter: {e1} | Gemini: {e2}")
 
 
 async def _call_llm_async(messages: list[dict]) -> str:
