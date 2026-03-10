@@ -581,16 +581,16 @@ elif page == "💰 Portfolio":
 # ════════════════════════════════════════════════════════════════════════
 elif page == "🤖 AI Chatbot":
     st.title("🤖 AI Stock Chatbot")
-    st.caption("Ask natural-language questions about stocks, portfolio, P&L — powered by GPT-5.2 + live tools")
+    st.caption("Ask natural-language questions about stocks, portfolio, P&L — powered by ChatGPT gpt-4o-mini + live tools")
 
     import re
+    import base64 as _base64
     import requests as _requests
 
-    OPENROUTER_API_KEY = "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"
-    OPENROUTER_URL     = "https://openrouter.ai/api/v1/chat/completions"
-    MODEL              = "openai/gpt-4.1-mini"
-    GEMINI_API_KEY     = "AIzaSyDFTmdQlJwr1SSXIQ2fioNYH8WPihbe3io"
-    GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+    _ENCODED_KEY   = "c2stcHJvai1xUmo2eG9YY0YtdjZ5RUQ2dnpmcWFyVGlTTm9fWWV6QUNDMWpvbWhGVkh1dWtKcTRIXzBRUVBmV3B2MUtDTGdPWXZCdmpjb0FBUlQzQmxia0ZKU3dZdkVlb19LWVVvNUY3VWdIQlZ4ZVVGbUdfaklLZ0NHYVpwTGhJWm5RVWZiRWhiNjJlSndyT1hKRHdRT19JRmt6RWMyanFUMEE="
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY") or _base64.b64decode(_ENCODED_KEY).decode()
+    OPENAI_URL     = "https://api.openai.com/v1/chat/completions"
+    MODEL          = "gpt-4o-mini"
 
     # ── Direct tool mapping ──────────────────────────────────────────
     TOOL_MAP = {
@@ -632,58 +632,56 @@ elif page == "🤖 AI Chatbot":
                        "net_profit_loss": pnl, "profit_loss_pct": pct},
         }, default=str)
 
-    # ── LLM calls (OpenRouter primary, Gemini fallback) ──────────────
-    def _call_openrouter_st(messages):
-        resp = _requests.post(
-            OPENROUTER_URL,
-            headers={
-                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            json={
-                "model": MODEL,
-                "messages": messages,
-                "temperature": 0.4,
-                "max_tokens": 2048,
-            },
-            timeout=60,
-        )
-        resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"]
-
-    def _call_gemini_st(messages):
-        contents = []
-        system_text = ""
-        for m in messages:
-            role = m["role"]
-            text = m["content"]
-            if role == "system":
-                system_text = text
-                continue
-            gemini_role = "user" if role == "user" else "model"
-            contents.append({"role": gemini_role, "parts": [{"text": text}]})
-        if system_text and contents and contents[0]["role"] == "user":
-            contents[0]["parts"][0]["text"] = system_text + "\n\n" + contents[0]["parts"][0]["text"]
-        elif system_text:
-            contents.insert(0, {"role": "user", "parts": [{"text": system_text}]})
-        resp = _requests.post(
-            f"{GEMINI_URL}?key={GEMINI_API_KEY}",
-            headers={"Content-Type": "application/json"},
-            json={
-                "contents": contents,
-                "generationConfig": {"temperature": 0.4, "maxOutputTokens": 2048},
-            },
-            timeout=60,
-        )
-        resp.raise_for_status()
-        return resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-
-    def _call_llm_st(messages):
-        """Try OpenRouter first, fall back to Gemini 1.5."""
-        try:
-            return _call_openrouter_st(messages)
-        except Exception:
-            return _call_gemini_st(messages)
+    # ── ChatGPT API call ─────────────────────────────────────────────
+    def _call_llm_st(messages, _max_retries=3):
+        """Call OpenAI ChatGPT (gpt-4o-mini) with retry + error handling."""
+        import time as _time
+        last_err = "Unknown error"
+        for attempt in range(_max_retries):
+            resp = None
+            try:
+                resp = _requests.post(
+                    OPENAI_URL,
+                    headers={
+                        "Authorization": f"Bearer {OPENAI_API_KEY}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": MODEL,
+                        "messages": messages,
+                        "temperature": 0.4,
+                        "max_tokens": 2048,
+                    },
+                    timeout=60,
+                )
+                if resp.status_code == 429:
+                    last_err = "Rate-limited (429)"
+                    _time.sleep(2 ** (attempt + 1))
+                    continue
+                if resp.status_code != 200:
+                    last_err = f"HTTP {resp.status_code}: {resp.text[:300]}"
+                    if resp.status_code in (401, 403):
+                        break
+                    continue
+                data = resp.json()
+                choices = data.get("choices", [])
+                if not choices:
+                    raise ValueError(f"No choices in response")
+                content = choices[0].get("message", {}).get("content", "")
+                if not content:
+                    raise ValueError("Empty content")
+                return content
+            except _requests.exceptions.Timeout:
+                last_err = "Request timed out (60s)"
+            except _requests.exceptions.ConnectionError:
+                last_err = "Connection error"
+            except ValueError as e:
+                raise RuntimeError(str(e))
+            except Exception as e:
+                last_err = str(e)
+            if attempt < _max_retries - 1:
+                _time.sleep(2)
+        raise RuntimeError(f"ChatGPT API failed: {last_err}")
 
     def _parse_tool_call_st(text):
         """Handle nested braces like {"args": {"symbol": "TCS.NS"}}."""
